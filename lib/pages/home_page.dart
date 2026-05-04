@@ -49,6 +49,68 @@ class _WeatherHomePageState extends State<WeatherHomePage>
     }
   }
 
+  // Inside _WeatherHomePageState
+
+// ── Menu drawer function ──────────────────────────────────
+  void _openMenu() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: C.card2,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: C.muted,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            _menuItem(ctx, Icons.home_rounded,       'Home'),
+            _menuItem(ctx, Icons.settings_rounded,   'Settings'),
+            _menuItem(ctx, Icons.info_outline_rounded,'About'),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _menuItem(BuildContext ctx, IconData icon, String label) {
+    return ListTile(
+      leading: Icon(icon, color: C.accent),
+      title: Text(label, style: const TextStyle(color: C.white)),
+      onTap: () => Navigator.pop(ctx),
+    );
+  }
+
+// ── Calendar function ─────────────────────────────────────
+  void _openCalendar() {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 7)),
+      lastDate: DateTime.now().add(const Duration(days: 7)),
+      builder: (ctx, child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: C.accent,
+            surface: C.card2,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+  }
+
   Future<void> _pickCity() async {
     final ctrl = TextEditingController();
     final city = await showDialog<String>(
@@ -110,13 +172,21 @@ class _WeatherHomePageState extends State<WeatherHomePage>
       backgroundColor: C.bg,
       body: Column(children: [
         SizedBox(height: top),
-        TopBar(data: _data, onCityTap: _pickCity),
+        // Replace old TopBar(...) with:
+        TopBar(
+          data        : _data,
+          onCityTap   : _pickCity,
+          onMenuTap   : _openMenu,
+          onCalendarTap: _openCalendar,
+        ),
         Expanded(
           child: _loading
               ? const Center(child: CircularProgressIndicator(
               color: C.accent, strokeWidth: 2.5))
               : _error != null
-              ? ErrorView(message: _error!)
+              ? ErrorView(message: _error!,
+            onRetry: () => _load(_data?.cityName ?? Config.defaultCity),
+          )
               : _data != null
               ? FadeTransition(
               opacity: _fade,
