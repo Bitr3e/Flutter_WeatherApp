@@ -4,7 +4,15 @@ import '../constants/constants.dart';
 class BottomNav extends StatelessWidget {
   final int selected;
   final ValueChanged<int> onTap;
-  const BottomNav({super.key, required this.selected, required this.onTap});
+
+  const BottomNav({
+    super.key,
+    required this.selected,
+    required this.onTap,
+  });
+
+  // Labels shown on long press
+  static const _labels = ['Home', 'Search', 'Alerts', 'Map'];
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +44,27 @@ class BottomNav extends StatelessWidget {
     final sel = selected == i;
     return GestureDetector(
       onTap: () => onTap(i),
+      // Long press shows a tooltip label
+      onLongPress: () {
+        final overlay = Overlay.of(ctx).context.findRenderObject()!;
+        showMenu(
+          context: ctx,
+          color: C.card2,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)),
+          position: RelativeRect.fromRect(
+            const Rect.fromLTWH(0, 0, 100, 100),
+            Offset.zero & overlay.semanticBounds.size,
+          ),
+          items: [
+            PopupMenuItem(
+              enabled: false,
+              child: Text(_labels[i],
+                  style: const TextStyle(color: C.white)),
+            ),
+          ],
+        );
+      },
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
         width: 64,
@@ -43,12 +72,16 @@ class BottomNav extends StatelessWidget {
         child: Center(
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+            padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
             decoration: BoxDecoration(
-              color: sel ? C.accent.withOpacity(0.15) : Colors.transparent,
+              color: sel
+                  ? C.accent.withOpacity(0.15)
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(18),
             ),
-            child: Icon(icon, color: sel ? C.accent : C.muted, size: 26),
+            child: Icon(icon,
+                color: sel ? C.accent : C.muted, size: 26),
           ),
         ),
       ),
