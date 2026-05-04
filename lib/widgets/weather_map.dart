@@ -5,10 +5,10 @@ import 'package:http/http.dart' as http;
 
 import '../services/map_service.dart';
 
-class MapPage extends StatelessWidget {
+class WeatherMap extends StatelessWidget {
   final String layer;
 
-  const MapPage({
+  const WeatherMap({
     super.key,
     this.layer = "precipitation_new",
   });

@@ -10,4 +10,5 @@ class C {
   static const grey    = Color(0xFF8B8FA8);
   static const muted   = Color(0xFF555870);
   static const divider = Color(0xFF252540);
+  static const Color black = Color(0xFF000000);
 }

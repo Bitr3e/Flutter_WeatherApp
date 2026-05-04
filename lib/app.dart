@@ -11,49 +11,67 @@ class WeatherApp extends StatelessWidget {
     return MaterialApp(
       title: 'Weather',
       debugShowCheckedModeBanner: false,
-      builder: (ctx, child) => MediaQuery(
-        data: MediaQuery.of(ctx).copyWith(
-          textScaler: TextScaler.linear(
-            MediaQuery.of(ctx).textScaler.scale(1.0).clamp(0.85, 1.1),
+
+      /// ─── Text Scaling Fix (safe + modern) ─────────────────
+      builder: (ctx, child) {
+        final mediaQuery = MediaQuery.of(ctx);
+
+        return MediaQuery(
+          data: mediaQuery.copyWith(
+            textScaler: const TextScaler.linear(1.0),
           ),
-        ),
-        child: child!,
-      ),
+          child: child!,
+        );
+      },
+
+      /// ─── Theme ─────────────────────────────────────────────
       theme: ThemeData(
         scaffoldBackgroundColor: C.bg,
         brightness: Brightness.dark,
         useMaterial3: true,
         fontFamily: 'sans-serif',
+
+        splashFactory: NoSplash.splashFactory,
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
       ),
+
       home: const _MainShell(),
     );
   }
 }
 
-// ─── Shell ────────────────────────────────────────────────────────────────────
+// ─── Main Shell ───────────────────────────────────────────────
 
 class _MainShell extends StatefulWidget {
   const _MainShell();
-  @override State<_MainShell> createState() => _MainShellState();
+
+  @override
+  State<_MainShell> createState() => _MainShellState();
 }
 
 class _MainShellState extends State<_MainShell> {
   int _idx = 0;
 
-  static const _pages = <Widget>[
-    WeatherHomePage(),
-    SearchPage(),
-    AlertsPage(),
-    MapPage(),
+  final List<Widget> _pages = [
+    const WeatherHomePage(),
+    const SearchPage(),
+    const AlertsPage(),
+    const WeatherMap(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: C.bg,
-      body: IndexedStack(index: _idx, children: _pages),
+
+      /// Keeps state of each page (important for Map)
+      body: IndexedStack(
+        index: _idx,
+        children: _pages,
+      ),
+
+      /// Bottom Navigation
       bottomNavigationBar: BottomNav(
         selected: _idx,
         onTap: (i) => setState(() => _idx = i),
