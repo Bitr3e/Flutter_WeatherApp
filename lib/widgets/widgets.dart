@@ -6,4 +6,3 @@ export 'section_title.dart';
 export 'hourly_list.dart';
 export 'details_card.dart';
 export 'error_view.dart';
-export 'weather_map.dart';

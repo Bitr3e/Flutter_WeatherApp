@@ -41,40 +41,40 @@ class WeatherApp extends StatelessWidget {
   }
 }
 
-// ─── Main Shell ───────────────────────────────────────────────
+// ── Shell ────────────────────────────────────────────────────────────────────
 
 class _MainShell extends StatefulWidget {
   const _MainShell();
-
-  @override
-  State<_MainShell> createState() => _MainShellState();
+  @override State<_MainShell> createState() => _MainShellState();
 }
 
 class _MainShellState extends State<_MainShell> {
   int _idx = 0;
 
+  // ← Remove "const" here — const can cause stale widget issues
   final List<Widget> _pages = [
     const WeatherHomePage(),
     const SearchPage(),
     const AlertsPage(),
-    const WeatherMap(),
+    const MapPage(),       // ← make sure this is the NEW MapPage
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: C.bg,
-
-      /// Keeps state of each page (important for Map)
+      // ← Add a safety clamp so index never goes out of range
       body: IndexedStack(
-        index: _idx,
+        index: _idx.clamp(0, _pages.length - 1),
         children: _pages,
       ),
-
-      /// Bottom Navigation
       bottomNavigationBar: BottomNav(
         selected: _idx,
-        onTap: (i) => setState(() => _idx = i),
+        onTap: (i) {
+          if (i >= 0 && i < _pages.length) {
+            setState(() => _idx = i);
+          }
+        },
       ),
     );
   }
