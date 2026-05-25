@@ -209,7 +209,7 @@ class _MapPageState extends State<MapPage>
 
 // ─── GLOBE VIEW ──────────────────────────────────────────────────────────────
 
-class _GlobeView extends StatelessWidget {
+class _GlobeView extends StatefulWidget {
   final Animation<double> rotateAnim;
   final ValueChanged<_CountryPin> onCountryTap;
   final _CountryPin? selectedPin;
@@ -223,67 +223,118 @@ class _GlobeView extends StatelessWidget {
   });
 
   @override
+  State<_GlobeView> createState() => _GlobeViewState();
+}
+
+class _GlobeViewState extends State<_GlobeView> {
+  // Manual drag offset in turns (0.0–1.0 per full rotation)
+  double _dragOffset = 0.0;
+  bool   _isDragging = false;
+
+  void _onDragUpdate(DragUpdateDetails d, double globeSize) {
+    setState(() {
+      // One full globe width = one full rotation
+      _dragOffset += d.delta.dx / globeSize;
+    });
+  }
+
+  void _onDragStart(DragStartDetails _) {
+    setState(() => _isDragging = true);
+  }
+
+  void _onDragEnd(DragEndDetails _) {
+    setState(() => _isDragging = false);
+  }
+
+  double get _totalRotation => widget.rotateAnim.value + _dragOffset;
+
+  @override
   Widget build(BuildContext context) {
-    final globeSize = width * 0.88;
+    final globeSize = widget.width * 0.88;
 
     return Center(
       child: SizedBox(
         width: globeSize,
         height: globeSize,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
+        child: GestureDetector(
+          onHorizontalDragStart : _onDragStart,
+          onHorizontalDragUpdate: (d) => _onDragUpdate(d, globeSize),
+          onHorizontalDragEnd   : _onDragEnd,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
 
-            // ── Outer glow ring ───────────────────────────
-            Container(
-              width: globeSize,
-              height: globeSize,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: C.accent.withOpacity(0.15),
-                    blurRadius: 40,
-                    spreadRadius: 10,
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Animated rotating world map ───────────────
-            AnimatedBuilder(
-              animation: rotateAnim,
-              builder: (_, __) => CustomPaint(
-                size: Size(globeSize, globeSize),
-                painter: _GlobePainter(
-                  rotation: rotateAnim.value,
+              // ── Outer glow ring ───────────────────────────
+              Container(
+                width: globeSize,
+                height: globeSize,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x2200BFFF),
+                      blurRadius: 40,
+                      spreadRadius: 10,
+                    ),
+                  ],
                 ),
               ),
-            ),
 
-            // ── Country pins (on top of globe) ────────────
-            AnimatedBuilder(
-              animation: rotateAnim,
-              builder: (_, __) => CustomPaint(
-                size: Size(globeSize, globeSize),
-                painter: _PinsPainter(
-                  rotation    : rotateAnim.value,
-                  selectedPin : selectedPin,
-                ),
-                child: SizedBox(
-                  width: globeSize,
-                  height: globeSize,
-                  child: _PinTapLayer(
-                    rotation    : rotateAnim.value,
-                    globeSize   : globeSize,
-                    onTap       : onCountryTap,
-                    selectedPin : selectedPin,
+              // ── Animated rotating world map ───────────────
+              AnimatedBuilder(
+                animation: widget.rotateAnim,
+                builder: (_, __) => CustomPaint(
+                  size: Size(globeSize, globeSize),
+                  painter: _GlobePainter(
+                    rotation: _totalRotation,
                   ),
                 ),
               ),
-            ),
 
-          ],
+              // ── Country pins (on top of globe) ────────────
+              AnimatedBuilder(
+                animation: widget.rotateAnim,
+                builder: (_, __) => CustomPaint(
+                  size: Size(globeSize, globeSize),
+                  painter: _PinsPainter(
+                    rotation    : _totalRotation,
+                    selectedPin : widget.selectedPin,
+                  ),
+                  child: SizedBox(
+                    width: globeSize,
+                    height: globeSize,
+                    child: _PinTapLayer(
+                      rotation    : _totalRotation,
+                      globeSize   : globeSize,
+                      onTap       : widget.onCountryTap,
+                      selectedPin : widget.selectedPin,
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── Drag hint icon ────────────────────────────
+              if (!_isDragging)
+                Positioned(
+                  bottom: globeSize * 0.07,
+                  child: AnimatedOpacity(
+                    opacity: 0.45,
+                    duration: const Duration(milliseconds: 300),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: const [
+                      Icon(Icons.swipe_rounded,
+                          color: Colors.white, size: 14),
+                      SizedBox(width: 4),
+                      Text('drag to spin',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w300)),
+                    ]),
+                  ),
+                ),
+
+            ],
+          ),
         ),
       ),
     );
@@ -303,15 +354,16 @@ class _GlobePainter extends CustomPainter {
     final cy = size.height / 2;
     final r  = size.width  / 2;
 
-    // ── Ocean base ─────────────────────────────────────
+    // ── Ocean base — realistic Earth deep blue ─────────
     final oceanPaint = Paint()
       ..shader = RadialGradient(
-        center: const Alignment(-0.3, -0.3),
-        colors: [
-          const Color(0xFF1E3A5F),
-          const Color(0xFF0D1F3C),
-          const Color(0xFF070E1F),
+        center: const Alignment(-0.25, -0.3),
+        colors: const [
+          Color(0xFF1A6B9A), // lit side — vibrant mid-blue
+          Color(0xFF0D4D78), // mid ocean
+          Color(0xFF072A4A), // deep shadow side
         ],
+        stops: const [0.0, 0.5, 1.0],
       ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: r));
     canvas.drawCircle(Offset(cx, cy), r, oceanPaint);
 
@@ -320,32 +372,23 @@ class _GlobePainter extends CustomPainter {
     canvas.clipPath(Path()
       ..addOval(Rect.fromCircle(center: Offset(cx, cy), radius: r)));
 
-    // ── Latitude lines ─────────────────────────────────
-    final latPaint = Paint()
-      ..color = C.accent.withOpacity(0.08)
-      ..strokeWidth = 0.8
+    // ── Subtle grid lines ──────────────────────────────
+    final gridPaint = Paint()
+      ..color = const Color(0x0CFFFFFF)
+      ..strokeWidth = 0.6
       ..style = PaintingStyle.stroke;
 
     for (int lat = -75; lat <= 75; lat += 15) {
-      final y     = cy + (lat / 90) * r;
-      final arcR  = _arcRadius(r, lat.toDouble());
+      final y    = cy + (lat / 90) * r;
+      final arcR = _arcRadius(r, lat.toDouble());
       if (arcR > 2) {
         canvas.drawOval(
           Rect.fromCenter(
-              center: Offset(cx, y),
-              width: arcR * 2,
-              height: arcR * 0.3),
-          latPaint,
+              center: Offset(cx, y), width: arcR * 2, height: arcR * 0.28),
+          gridPaint,
         );
       }
     }
-
-    // ── Longitude lines (rotate with animation) ────────
-    final lonPaint = Paint()
-      ..color = C.accent.withOpacity(0.07)
-      ..strokeWidth = 0.8
-      ..style = PaintingStyle.stroke;
-
     for (int i = 0; i < 12; i++) {
       final angle = (i / 12 + rotation) * 2 * 3.14159;
       final x     = cx + r * 0.98 * _cosApprox(angle.toDouble());
@@ -355,38 +398,54 @@ class _GlobePainter extends CustomPainter {
           width: (x - cx).abs() * 2,
           height: r * 1.96,
         ),
-        lonPaint,
+        gridPaint,
       );
     }
 
-    // ── Simple continent shapes ────────────────────────
+    // ── Continents ────────────────────────────────────
     _drawContinents(canvas, cx, cy, r, rotation);
 
-    // ── Atmosphere rim ─────────────────────────────────
+    // ── Deep shadow on the night side ─────────────────
+    final nightPaint = Paint()
+      ..shader = RadialGradient(
+        center: const Alignment(0.7, 0.2),
+        radius: 0.75,
+        colors: const [
+          Colors.transparent,
+          Color(0x55000A14),
+          Color(0xBB000A14),
+        ],
+        stops: const [0.35, 0.65, 1.0],
+      ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: r))
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(cx, cy), r, nightPaint);
+
+    // ── Atmosphere rim — light blue halo ──────────────
     final rimPaint = Paint()
       ..shader = RadialGradient(
         center: Alignment.center,
         radius: 1.0,
-        colors: [
+        colors: const [
           Colors.transparent,
           Colors.transparent,
-          C.accent.withOpacity(0.05),
-          C.accent.withOpacity(0.2),
+          Color(0x1280CFFF),
+          Color(0x4A55AAFF),
+          Color(0x6633AAFF),
         ],
-        stops: const [0.0, 0.75, 0.88, 1.0],
+        stops: const [0.0, 0.72, 0.84, 0.93, 1.0],
       ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: r))
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(cx, cy), r, rimPaint);
 
     canvas.restore();
 
-    // ── Specular highlight ─────────────────────────────
+    // ── Specular sunlight glint ────────────────────────
     final highlightPaint = Paint()
       ..shader = RadialGradient(
-        center: const Alignment(-0.5, -0.5),
-        radius: 0.6,
-        colors: [
-          Colors.white.withOpacity(0.12),
+        center: const Alignment(-0.45, -0.45),
+        radius: 0.55,
+        colors: const [
+          Color(0x22FFFFFF),
           Colors.transparent,
         ],
       ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: r));
@@ -396,7 +455,7 @@ class _GlobePainter extends CustomPainter {
     canvas.drawCircle(
       Offset(cx, cy), r,
       Paint()
-        ..color = C.accent.withOpacity(0.25)
+        ..color = const Color(0x5577CCFF)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5,
     );
@@ -418,65 +477,67 @@ class _GlobePainter extends CustomPainter {
 
   void _drawContinents(Canvas canvas, double cx, double cy,
       double r, double rotation) {
-    final paint = Paint()
-      ..color = const Color(0xFF2D6A4F)
-      ..style = PaintingStyle.fill;
-
+    final landPaint   = Paint()..color = const Color(0xFF3A7D44)..style = PaintingStyle.fill;
+    final desertPaint = Paint()..color = const Color(0xFFC8A96E)..style = PaintingStyle.fill;
+    final tundraPaint = Paint()..color = const Color(0xFF5E8265)..style = PaintingStyle.fill;
     final borderPaint = Paint()
-      ..color = const Color(0xFF52B788).withOpacity(0.6)
+      ..color = const Color(0x662D6035)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.5;
 
-    // Each continent defined as (lonDeg, latDeg, widthFactor, heightFactor)
-    final continents = [
+    final blobs = [
       // North America
-      _ContinentBlob(-100, 45, 0.28, 0.22),
+      _ColoredBlob(-100, 55,  0.26, 0.18, tundraPaint),
+      _ColoredBlob(-100, 38,  0.22, 0.18, landPaint),
+      _ColoredBlob(-105, 24,  0.13, 0.12, desertPaint),
       // South America
-      _ContinentBlob(-60, -15, 0.18, 0.28),
+      _ColoredBlob(-55,  -4,  0.17, 0.14, landPaint),
+      _ColoredBlob(-60, -30,  0.14, 0.18, landPaint),
+      _ColoredBlob(-68, -22,  0.08, 0.07, desertPaint),
       // Europe
-      _ContinentBlob(15, 50, 0.14, 0.14),
+      _ColoredBlob(15,   55,  0.13, 0.12, landPaint),
+      _ColoredBlob(22,   65,  0.10, 0.08, tundraPaint),
       // Africa
-      _ContinentBlob(20, 5, 0.20, 0.32),
+      _ColoredBlob(18,   20,  0.22, 0.16, desertPaint),
+      _ColoredBlob(26,   -5,  0.20, 0.22, landPaint),
+      _ColoredBlob(22,  -27,  0.13, 0.13, desertPaint),
       // Asia
-      _ContinentBlob(90, 45, 0.42, 0.28),
+      _ColoredBlob(90,   50,  0.38, 0.24, landPaint),
+      _ColoredBlob(95,   66,  0.30, 0.11, tundraPaint),
+      _ColoredBlob(57,   34,  0.18, 0.12, desertPaint),
       // Australia
-      _ContinentBlob(135, -25, 0.16, 0.14),
+      _ColoredBlob(134, -25,  0.12, 0.10, desertPaint),
+      _ColoredBlob(149, -32,  0.06, 0.07, landPaint),
       // Greenland
-      _ContinentBlob(-42, 72, 0.10, 0.08),
+      _ColoredBlob(-42,  72,  0.09, 0.07, tundraPaint),
     ];
 
-    for (final c in continents) {
-      final pos = _projectToGlobe(c.lon, c.lat, cx, cy, r, rotation);
-      if (pos == null) continue; // behind the globe
-
-      final w = r * c.widthFactor  * pos.scale;
-      final h = r * c.heightFactor * pos.scale;
+    for (final b in blobs) {
+      final pos = _projectToGlobe(b.lon, b.lat, cx, cy, r, rotation);
+      if (pos == null) continue;
+      final w = r * b.widthFactor  * pos.scale;
+      final h = r * b.heightFactor * pos.scale;
       if (w < 4 || h < 4) continue;
-
       final rect = Rect.fromCenter(
           center: Offset(pos.x, pos.y), width: w, height: h);
-      canvas.drawOval(rect, paint);
+      canvas.drawOval(rect, b.paint);
       canvas.drawOval(rect, borderPaint);
     }
 
     // Ice caps
-    final icePaint = Paint()..color = Colors.white.withOpacity(0.7);
-    // North pole
-    canvas.drawOval(
-      Rect.fromCenter(
-          center: Offset(cx, cy - r * 0.85),
-          width: r * 0.35,
-          height: r * 0.12),
-      icePaint,
-    );
-    // South pole
-    canvas.drawOval(
-      Rect.fromCenter(
-          center: Offset(cx, cy + r * 0.88),
-          width: r * 0.45,
-          height: r * 0.10),
-      icePaint,
-    );
+    final icePaint = Paint()..color = const Color(0xDDEEF5FF);
+    final iceStroke = Paint()
+      ..color = const Color(0xAABBDDFF)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+    final npRect = Rect.fromCenter(
+        center: Offset(cx, cy - r * 0.83), width: r * 0.38, height: r * 0.14);
+    canvas.drawOval(npRect, icePaint);
+    canvas.drawOval(npRect, iceStroke);
+    final spRect = Rect.fromCenter(
+        center: Offset(cx, cy + r * 0.87), width: r * 0.48, height: r * 0.12);
+    canvas.drawOval(spRect, icePaint);
+    canvas.drawOval(spRect, iceStroke);
   }
 
   _ProjectedPoint? _projectToGlobe(
@@ -506,10 +567,11 @@ class _GlobePainter extends CustomPainter {
   bool shouldRepaint(_GlobePainter old) => old.rotation != rotation;
 }
 
-class _ContinentBlob {
+class _ColoredBlob {
   final double lon, lat, widthFactor, heightFactor;
-  const _ContinentBlob(this.lon, this.lat,
-      this.widthFactor, this.heightFactor);
+  final Paint paint;
+  const _ColoredBlob(this.lon, this.lat,
+      this.widthFactor, this.heightFactor, this.paint);
 }
 
 class _ProjectedPoint {
