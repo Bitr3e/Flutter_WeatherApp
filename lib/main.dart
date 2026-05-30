@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app.dart';
+import 'services/favorites_service.dart';
 import 'services/temperature_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await TemperatureService.instance.load();
+  await FavoritesService.instance.load();
 
   // Lock to portrait — suits the tall 20:9 Realme C35 screen
   SystemChrome.setPreferredOrientations([

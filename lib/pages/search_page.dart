@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/constants.dart';
 import '../models/models.dart';
+import '../services/favorites_service.dart';
 import '../services/temperature_service.dart';
 import '../services/weather_service.dart';
 import '../utils/utils.dart';
@@ -130,6 +131,8 @@ class _ResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = TemperatureService.instance;
+    final fav = FavoritesService.instance;
+    final isFav = fav.contains(data.cityName);
     return Container(
       padding: const EdgeInsets.all(Dims.cardPadding),
       decoration: BoxDecoration(
@@ -146,12 +149,30 @@ class _ResultCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${data.cityName}, ${data.country}',
-                  style: TextStyle(
-                    color: C.white,
-                    fontSize: R.font(context, 16),
-                    fontWeight: FontWeight.bold,
-                  )),
+              Row(children: [
+                Expanded(
+                  child: Text('${data.cityName}, ${data.country}',
+                      style: TextStyle(
+                        color: C.white,
+                        fontSize: R.font(context, 16),
+                        fontWeight: FontWeight.bold,
+                      )),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    if (isFav) {
+                      fav.remove(data.cityName);
+                    } else {
+                      fav.add(data.cityName);
+                    }
+                  },
+                  child: Icon(
+                    isFav ? Icons.star_rounded : Icons.star_border_rounded,
+                    color: isFav ? C.orange : C.muted,
+                    size: 24,
+                  ),
+                ),
+              ]),
               Text(data.capDesc,
                   style: TextStyle(
                       color: C.grey, fontSize: R.font(context, 12))),

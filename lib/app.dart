@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'constants/constants.dart';
 import 'pages/pages.dart';
+import 'services/favorites_service.dart';
 import 'widgets/widgets.dart';
 
 class WeatherApp extends StatelessWidget {
@@ -50,28 +51,47 @@ class _MainShell extends StatefulWidget {
 
 class _MainShellState extends State<_MainShell> {
   int _idx = 0;
+  List<String> _cities = [];
 
-  // ← Remove "const" here — const can cause stale widget issues
-  final List<Widget> _pages = [
-    const WeatherHomePage(),
-    const SearchPage(),
-    const AlertsPage(),
-    const MapPage(),       // ← make sure this is the NEW MapPage
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _cities = _buildCities();
+    FavoritesService.instance.cities.addListener(_onFavChanged);
+  }
+
+  @override
+  void dispose() {
+    FavoritesService.instance.cities.removeListener(_onFavChanged);
+    super.dispose();
+  }
+
+  void _onFavChanged() {
+    if (mounted) setState(() => _cities = _buildCities());
+  }
+
+  List<String> _buildCities() {
+    final favs = FavoritesService.instance.cities.value;
+    return favs.isEmpty ? ['Manila'] : favs;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: C.bg,
-      // ← Add a safety clamp so index never goes out of range
       body: IndexedStack(
-        index: _idx.clamp(0, _pages.length - 1),
-        children: _pages,
+        index: _idx.clamp(0, 3),
+        children: [
+          WeatherHomePage(cities: _cities),
+          const SearchPage(),
+          const AlertsPage(),
+          const MapPage(),
+        ],
       ),
       bottomNavigationBar: BottomNav(
         selected: _idx,
         onTap: (i) {
-          if (i >= 0 && i < _pages.length) {
+          if (i >= 0 && i < 4) {
             setState(() => _idx = i);
           }
         },

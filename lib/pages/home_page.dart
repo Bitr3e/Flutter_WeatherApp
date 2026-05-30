@@ -7,17 +7,20 @@ import '../utils/utils.dart';
 import '../widgets/widgets.dart';
 
 class WeatherHomePage extends StatefulWidget {
-  const WeatherHomePage({super.key});
+  final List<String> cities;
+  const WeatherHomePage({super.key, required this.cities});
   @override State<WeatherHomePage> createState() => _WeatherHomePageState();
 }
 
 class _WeatherHomePageState extends State<WeatherHomePage>
     with SingleTickerProviderStateMixin {
+  late final PageController _pageCtrl;
   final _svc = WeatherService();
   WeatherData? _data;
   List<DailyForecast>? _forecast;
   bool    _loading = false;
   String? _error;
+  int     _cityIdx = 0;
 
   late AnimationController _ac;
   late Animation<double>   _fade;
@@ -26,10 +29,11 @@ class _WeatherHomePageState extends State<WeatherHomePage>
   void initState() {
     super.initState();
     TemperatureService.instance.isCelsius.addListener(_onUnitChanged);
+    _pageCtrl = PageController();
     _ac   = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 500));
     _fade = CurvedAnimation(parent: _ac, curve: Curves.easeOut);
-    _load(Config.defaultCity);
+    _load(widget.cities.first);
   }
 
   void _onUnitChanged() { if (mounted) setState(() {}); }
@@ -37,7 +41,13 @@ class _WeatherHomePageState extends State<WeatherHomePage>
   @override
   void dispose() {
     TemperatureService.instance.isCelsius.removeListener(_onUnitChanged);
-    _ac.dispose(); super.dispose();
+    _pageCtrl.dispose(); _ac.dispose(); super.dispose();
+  }
+
+  void _onPageChanged(int idx) {
+    if (idx == _cityIdx) return;
+    setState(() => _cityIdx = idx);
+    _load(widget.cities[idx]);
   }
 
   Future<void> _load(String city) async {
@@ -195,32 +205,60 @@ class _WeatherHomePageState extends State<WeatherHomePage>
   Widget build(BuildContext context) {
     final top   = MediaQuery.of(context).padding.top;
     final width = MediaQuery.of(context).size.width;
+    final multi = widget.cities.length > 1;
+
+    Widget body = _loading
+        ? const Center(child: CircularProgressIndicator(
+        color: C.accent, strokeWidth: 2.5))
+        : _error != null
+        ? ErrorView(message: _error!,
+      onRetry: () => _load(_data?.cityName ?? widget.cities[_cityIdx]),
+    )
+        : _data != null
+        ? FadeTransition(
+        opacity: _fade,
+        child: _HomeBody(data: _data!, width: width, forecast: _forecast))
+        : const SizedBox();
+
+    if (multi) {
+      body = Column(children: [
+        Expanded(
+          child: PageView(
+            controller: _pageCtrl,
+            onPageChanged: _onPageChanged,
+            children: widget.cities.map((_) => body).toList(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(widget.cities.length, (i) =>
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: _cityIdx == i ? 18 : 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: _cityIdx == i ? C.accent : C.muted,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+      ]);
+    }
 
     return Scaffold(
       backgroundColor: C.bg,
       body: Column(children: [
         SizedBox(height: top),
-        // Replace old TopBar(...) with:
         TopBar(
           data        : _data,
           onCityTap   : _pickCity,
           onMenuTap   : _openMenu,
           onCalendarTap: _openCalendar,
         ),
-        Expanded(
-          child: _loading
-              ? const Center(child: CircularProgressIndicator(
-              color: C.accent, strokeWidth: 2.5))
-              : _error != null
-              ? ErrorView(message: _error!,
-            onRetry: () => _load(_data?.cityName ?? Config.defaultCity),
-          )
-              : _data != null
-              ? FadeTransition(
-              opacity: _fade,
-               child: _HomeBody(data: _data!, width: width, forecast: _forecast))
-              : const SizedBox(),
-        ),
+        Expanded(child: body),
       ]),
     );
   }
