@@ -7,3 +7,4 @@ export 'hourly_list.dart';
 export 'details_card.dart';
 export 'error_view.dart';
 export 'daily_forecast.dart';
+export 'weather_background.dart';

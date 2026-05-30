@@ -286,15 +286,19 @@ class _WeatherHomePageState extends State<WeatherHomePage>
 
     return Scaffold(
       backgroundColor: C.bg,
-      body: Column(children: [
-        SizedBox(height: top),
-        TopBar(
-          data        : _data,
-          onCityTap   : _pickCity,
-          onMenuTap   : _openMenu,
-          onCalendarTap: _openCalendar,
-        ),
-        Expanded(child: body),
+      body: Stack(children: [
+        if (_data != null)
+          WeatherBackground(iconCode: _data!.icon),
+        Column(children: [
+          SizedBox(height: top),
+          TopBar(
+            data        : _data,
+            onCityTap   : _pickCity,
+            onMenuTap   : _openMenu,
+            onCalendarTap: _openCalendar,
+          ),
+          Expanded(child: body),
+        ]),
       ]),
     );
   }
