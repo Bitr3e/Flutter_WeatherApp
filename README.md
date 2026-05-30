@@ -1,6 +1,6 @@
 # Weather App
 
-A Flutter weather application optimized for Realme C35 (Android 11, FHD+ 1080x2408, 20:9 aspect ratio).
+A Flutter weather application optimized for (Android 11, FHD+ 1080x2408, 20:9 aspect ratio).
 
 ## Features
 
