@@ -170,7 +170,14 @@ class _WeatherHomePageState extends State<WeatherHomePage>
                 ThemeService.instance.toggle();
               },
             ),
-            _menuItem(ctx, Icons.info_outline_rounded,'About'),
+            ListTile(
+              leading: Icon(Icons.info_outline_rounded, color: C.accent),
+              title: Text('About', style: TextStyle(color: C.white)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _openAbout();
+              },
+            ),
             const SizedBox(height: 10),
           ],
         ),
@@ -183,6 +190,69 @@ class _WeatherHomePageState extends State<WeatherHomePage>
       leading: Icon(icon, color: C.accent),
       title: Text(label, style: TextStyle(color: C.white)),
       onTap: () => Navigator.pop(ctx),
+    );
+  }
+
+// ── About dialog ──────────────────────────────────────────
+  void _openAbout() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: C.card2,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: C.muted,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Icon(Icons.cloud_rounded, color: C.accent, size: 48),
+            const SizedBox(height: 12),
+            Text('Weather App',
+                style: TextStyle(
+                  color: C.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                )),
+            const SizedBox(height: 4),
+            Text('Version 1.0.0',
+                style: TextStyle(color: C.grey, fontSize: 13)),
+            const SizedBox(height: 20),
+            Container(height: 1, color: C.divider),
+            const SizedBox(height: 20),
+            Text('Developed by',
+                style: TextStyle(color: C.grey, fontSize: 12)),
+            const SizedBox(height: 12),
+            _creditTile('John Brence Condesa'),
+            _creditTile('Reymart Dela Cruz'),
+            _creditTile('Carl Andri De Castro'),
+            _creditTile('Scott Franklin Maher'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _creditTile(String name) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(children: [
+        Icon(Icons.person_rounded, color: C.accent, size: 18),
+        const SizedBox(width: 10),
+        Text(name,
+            style: TextStyle(
+                color: C.white, fontSize: 15, fontWeight: FontWeight.w500)),
+      ]),
     );
   }
 
