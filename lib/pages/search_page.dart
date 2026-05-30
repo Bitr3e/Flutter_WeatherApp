@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/constants.dart';
 import '../models/models.dart';
+import '../services/temperature_service.dart';
 import '../services/weather_service.dart';
 import '../utils/utils.dart';
 
@@ -15,6 +16,14 @@ class _SearchPageState extends State<SearchPage> {
   WeatherData? _result;
   bool    _loading = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    TemperatureService.instance.isCelsius.addListener(() {
+      if (mounted) setState(() {});
+    });
+  }
 
   @override
   void dispose() { _ctrl.dispose(); super.dispose(); }
@@ -120,6 +129,7 @@ class _ResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = TemperatureService.instance;
     return Container(
       padding: const EdgeInsets.all(Dims.cardPadding),
       decoration: BoxDecoration(
@@ -147,7 +157,7 @@ class _ResultCard extends StatelessWidget {
                       color: C.grey, fontSize: R.font(context, 12))),
               const SizedBox(height: 6),
               Row(children: [
-                Text('${data.temperature.round()}°C',
+                Text('${t.convert(data.temperature).round()}${t.unit()}',
                     style: TextStyle(
                       color: C.white,
                       fontSize: R.font(context, 32),
@@ -157,11 +167,11 @@ class _ResultCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('H: ${data.tempMax.round()}°',
+                    Text('H: ${t.convert(data.tempMax).round()}°',
                         style: TextStyle(
                             color: C.grey,
                             fontSize: R.font(context, 12))),
-                    Text('L: ${data.tempMin.round()}°',
+                    Text('L: ${t.convert(data.tempMin).round()}°',
                         style: TextStyle(
                             color: C.grey,
                             fontSize: R.font(context, 12))),

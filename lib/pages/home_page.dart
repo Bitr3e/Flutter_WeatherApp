@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/constants.dart';
 import '../models/models.dart';
+import '../services/temperature_service.dart';
 import '../services/weather_service.dart';
 import '../utils/utils.dart';
 import '../widgets/widgets.dart';
@@ -17,21 +18,26 @@ class _WeatherHomePageState extends State<WeatherHomePage>
   bool    _loading = false;
   String? _error;
 
-  // Single lightweight fade — safe for Mali-G52 GPU
   late AnimationController _ac;
   late Animation<double>   _fade;
 
   @override
   void initState() {
     super.initState();
+    TemperatureService.instance.isCelsius.addListener(_onUnitChanged);
     _ac   = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 500));
     _fade = CurvedAnimation(parent: _ac, curve: Curves.easeOut);
     _load(Config.defaultCity);
   }
 
+  void _onUnitChanged() { if (mounted) setState(() {}); }
+
   @override
-  void dispose() { _ac.dispose(); super.dispose(); }
+  void dispose() {
+    TemperatureService.instance.isCelsius.removeListener(_onUnitChanged);
+    _ac.dispose(); super.dispose();
+  }
 
   Future<void> _load(String city) async {
     setState(() { _loading = true; _error = null; });
@@ -51,8 +57,9 @@ class _WeatherHomePageState extends State<WeatherHomePage>
 
   // Inside _WeatherHomePageState
 
-// ── Menu drawer function ──────────────────────────────────
+  // ── Menu drawer function ──────────────────────────────────
   void _openMenu() {
+    final isC = TemperatureService.instance.isCelsius.value;
     showModalBottomSheet(
       context: context,
       backgroundColor: C.card2,
@@ -75,7 +82,20 @@ class _WeatherHomePageState extends State<WeatherHomePage>
             ),
             const SizedBox(height: 20),
             _menuItem(ctx, Icons.home_rounded,       'Home'),
-            _menuItem(ctx, Icons.settings_rounded,   'Settings'),
+            SwitchListTile(
+              secondary: Icon(isC ? Icons.thermostat_rounded : Icons.thermostat_rounded,
+                  color: C.accent),
+              title: const Text('°C / °F', style: TextStyle(color: C.white)),
+              subtitle: Text(isC ? 'Celsius' : 'Fahrenheit',
+                  style: const TextStyle(color: C.grey, fontSize: 12)),
+              value: isC,
+              activeTrackColor: C.accent.withValues(alpha: 0.4),
+              activeThumbColor: C.accent,
+              onChanged: (_) {
+                Navigator.pop(ctx);
+                TemperatureService.instance.toggle();
+              },
+            ),
             _menuItem(ctx, Icons.info_outline_rounded,'About'),
             const SizedBox(height: 10),
           ],
@@ -255,11 +275,12 @@ class _TempDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = TemperatureService.instance;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('${temp.round()}',
+        Text('${t.convert(temp).round()}',
             style: TextStyle(
               color: C.white,
               fontSize: R.font(context, 86),
@@ -268,7 +289,7 @@ class _TempDisplay extends StatelessWidget {
             )),
         Padding(
           padding: EdgeInsets.only(top: R.w(context, 16)),
-          child: Text('°C',
+          child: Text(t.unit(),
               style: TextStyle(
                 color: C.white,
                 fontSize: R.font(context, 30),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/constants.dart';
 import '../models/models.dart';
+import '../services/temperature_service.dart';
 import '../services/weather_service.dart';
 import '../utils/utils.dart';
 
@@ -31,6 +32,7 @@ class _MapPageState extends State<MapPage>
   @override
   void initState() {
     super.initState();
+    TemperatureService.instance.isCelsius.addListener(_onUnitChanged);
     _rotateCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 40),
@@ -40,9 +42,12 @@ class _MapPageState extends State<MapPage>
 
   @override
   void dispose() {
+    TemperatureService.instance.isCelsius.removeListener(_onUnitChanged);
     _rotateCtrl.dispose();
     super.dispose();
   }
+
+  void _onUnitChanged() { if (mounted) setState(() {}); }
 
   void _toggleRotate() {
     setState(() {
@@ -1072,6 +1077,7 @@ class _WeatherContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = TemperatureService.instance;
     return Column(children: [
 
       // ── Main weather row ─────────────────────────────
@@ -1080,7 +1086,7 @@ class _WeatherContent extends StatelessWidget {
         children: [
           // Temperature
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('${data.temperature.round()}',
+            Text('${t.convert(data.temperature).round()}',
                 style: TextStyle(
                   color: C.white,
                   fontSize: R.font(context, 52),
@@ -1089,7 +1095,7 @@ class _WeatherContent extends StatelessWidget {
                 )),
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text('°C',
+              child: Text(t.unit(),
                   style: TextStyle(
                     color: C.white,
                     fontSize: R.font(context, 20),
@@ -1128,7 +1134,7 @@ class _WeatherContent extends StatelessWidget {
           _stat(context, Icons.air_rounded,
               '${(data.windSpeed * 3.6).round()} km/h', 'Wind'),
           _stat(context, Icons.thermostat_rounded,
-              '${data.feelsLike.round()}°C', 'Feels Like'),
+              '${t.convert(data.feelsLike).round()}${t.unit()}', 'Feels Like'),
           _stat(context, Icons.visibility_rounded,
               '${(data.visibility / 1000).round()} km', 'Visibility'),
         ],

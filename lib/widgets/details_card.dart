@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/constants.dart';
 import '../models/models.dart';
+import '../services/temperature_service.dart';
 import '../utils/utils.dart';
 
 class DetailsCard extends StatelessWidget {
@@ -10,6 +11,7 @@ class DetailsCard extends StatelessWidget {
 
   // ── Show full detail bottom sheet ─────────────────────────
   void _showFullDetails(BuildContext context) {
+    final svc = TemperatureService.instance;
     showModalBottomSheet(
       context: context,
       backgroundColor: C.card2,
@@ -22,7 +24,6 @@ class DetailsCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Handle bar
             Center(
               child: Container(
                 width: 40, height: 4,
@@ -41,7 +42,7 @@ class DetailsCard extends StatelessWidget {
                 )),
             const SizedBox(height: 20),
             _detailRow(ctx, Icons.thermostat_rounded,
-                'Feels Like', '${data.feelsLike.round()}°C'),
+                'Feels Like', '${svc.convert(data.feelsLike).round()}${svc.unit()}'),
             _detailRow(ctx, Icons.water_drop_rounded,
                 'Humidity', '${data.humidity}%'),
             _detailRow(ctx, Icons.compress_rounded,
@@ -50,9 +51,9 @@ class DetailsCard extends StatelessWidget {
                 'Visibility',
                 '${(data.visibility / 1000).toStringAsFixed(1)} km'),
             _detailRow(ctx, Icons.arrow_downward_rounded,
-                'Min Temp', '${data.tempMin.round()}°C'),
+                'Min Temp', '${svc.convert(data.tempMin).round()}${svc.unit()}'),
             _detailRow(ctx, Icons.arrow_upward_rounded,
-                'Max Temp', '${data.tempMax.round()}°C'),
+                'Max Temp', '${svc.convert(data.tempMax).round()}${svc.unit()}'),
             _detailRow(ctx, Icons.cloud_rounded,
                 'Cloud Cover', '${data.clouds}%'),
             _detailRow(ctx, Icons.air_rounded,
@@ -88,6 +89,7 @@ class DetailsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = TemperatureService.instance;
     return Container(
       padding: const EdgeInsets.all(Dims.cardPadding),
       decoration: BoxDecoration(
@@ -122,7 +124,7 @@ class DetailsCard extends StatelessWidget {
           const SizedBox(height: 16),
           _row(context, [
             _tile(context, Icons.thermostat_rounded,
-                'Feels Like', '${data.feelsLike.round()}°C'),
+                'Feels Like', '${t.convert(data.feelsLike).round()}${t.unit()}'),
             _tile(context, Icons.water_drop_rounded,
                 'Humidity', '${data.humidity}%'),
           ]),
@@ -137,9 +139,9 @@ class DetailsCard extends StatelessWidget {
           const SizedBox(height: Dims.itemGap),
           _row(context, [
             _tile(context, Icons.arrow_downward_rounded,
-                'Min Temp', '${data.tempMin.round()}°C'),
+                'Min Temp', '${t.convert(data.tempMin).round()}${t.unit()}'),
             _tile(context, Icons.arrow_upward_rounded,
-                'Max Temp', '${data.tempMax.round()}°C'),
+                'Max Temp', '${t.convert(data.tempMax).round()}${t.unit()}'),
           ]),
         ],
       ),

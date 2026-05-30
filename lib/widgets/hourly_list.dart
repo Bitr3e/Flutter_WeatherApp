@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/constants.dart';
 import '../models/models.dart';
+import '../services/temperature_service.dart';
 import '../utils/utils.dart';
 
 class HourlyList extends StatelessWidget {
@@ -48,7 +49,7 @@ class HourlyList extends StatelessWidget {
                         color: now ? C.accent : C.grey,
                         fontSize: R.font(context, 11),
                       )),
-                  Text('${h.temperature.round()}°',
+                  Text('${TemperatureService.instance.convert(h.temperature).round()}°',
                       style: TextStyle(
                         color: C.white,
                         fontSize: R.font(context, 15),
