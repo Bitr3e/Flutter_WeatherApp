@@ -75,7 +75,7 @@ class _SearchPageState extends State<SearchPage> {
                   onSubmitted: (_) => _search(),
                   decoration: InputDecoration(
                     hintText: 'Search city...',
-                    hintStyle: const TextStyle(color: C.muted),
+                    hintStyle: TextStyle(color: C.muted),
                     filled: true,
                     fillColor: C.card,
                     contentPadding: const EdgeInsets.symmetric(
@@ -85,7 +85,7 @@ class _SearchPageState extends State<SearchPage> {
                       borderSide: BorderSide.none,
                     ),
                     prefixIcon:
-                    const Icon(Icons.search_rounded, color: C.grey),
+                    Icon(Icons.search_rounded, color: C.grey),
                   ),
                 ),
               ),
@@ -105,12 +105,12 @@ class _SearchPageState extends State<SearchPage> {
             ]),
             const SizedBox(height: 22),
             if (_loading)
-              const Center(child: CircularProgressIndicator(
+              Center(child: CircularProgressIndicator(
                   color: C.accent, strokeWidth: 2.5))
             else if (_error != null)
               Center(
                 child: Text(_error!,
-                    style: const TextStyle(color: C.grey),
+                    style: TextStyle(color: C.grey),
                     textAlign: TextAlign.center),
               )
             else if (_result != null)
@@ -143,7 +143,7 @@ class _ResultCard extends StatelessWidget {
       child: Row(children: [
         Image.network(data.iconUrl, width: 68, height: 68,
             errorBuilder: (_, __, ___) =>
-            const Icon(Icons.cloud, color: C.grey, size: 60)),
+            Icon(Icons.cloud, color: C.grey, size: 60)),
         const SizedBox(width: 14),
         Expanded(
           child: Column(

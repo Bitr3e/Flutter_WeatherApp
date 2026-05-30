@@ -30,7 +30,7 @@ class TopBar extends StatelessWidget {
           GestureDetector(
             onTap: onMenuTap,
             behavior: HitTestBehavior.opaque,
-            child: const SizedBox(
+            child: SizedBox(
               width: Dims.touchTarget,
               height: Dims.touchTarget,
               child: Center(
@@ -44,7 +44,7 @@ class TopBar extends StatelessWidget {
             GestureDetector(
               onTap: onCityTap,
               child: Row(mainAxisSize: MainAxisSize.min, children: [
-                const Icon(Icons.location_on_rounded,
+                Icon(Icons.location_on_rounded,
                     color: C.accent, size: 15),
                 const SizedBox(width: 4),
                 RichText(
@@ -67,7 +67,7 @@ class TopBar extends StatelessWidget {
                   ]),
                 ),
                 const SizedBox(width: 3),
-                const Icon(Icons.keyboard_arrow_down_rounded,
+                Icon(Icons.keyboard_arrow_down_rounded,
                     color: C.grey, size: 17),
               ]),
             )
@@ -87,7 +87,7 @@ class TopBar extends StatelessWidget {
                   decoration: BoxDecoration(
                       color: C.card,
                       borderRadius: BorderRadius.circular(10)),
-                  child: const Icon(Icons.calendar_today_outlined,
+                  child: Icon(Icons.calendar_today_outlined,
                       color: C.white, size: 19),
                 ),
               ),

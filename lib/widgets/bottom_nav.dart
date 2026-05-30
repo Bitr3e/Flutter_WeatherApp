@@ -60,7 +60,7 @@ class BottomNav extends StatelessWidget {
             PopupMenuItem(
               enabled: false,
               child: Text(_labels[i],
-                  style: const TextStyle(color: C.white)),
+                  style: TextStyle(color: C.white)),
             ),
           ],
         );

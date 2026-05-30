@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../constants/config.dart';
 import '../models/models.dart';
+import '../utils/connectivity.dart';
 import '../utils/forecast_parser.dart';
 
 class WeatherService {
@@ -17,7 +18,7 @@ class WeatherService {
           '&units=metric',
     );
 
-    final res = await _client.get(uri).timeout(Config.requestTimeout);
+    final res = await Connectivity.guardedGet(_client, uri, timeout: Config.requestTimeout);
 
     switch (res.statusCode) {
       case 200 : return WeatherData.fromJson(jsonDecode(res.body));
@@ -35,7 +36,7 @@ class WeatherService {
           '&units=metric',
     );
 
-    final res = await _client.get(uri).timeout(Config.requestTimeout);
+    final res = await Connectivity.guardedGet(_client, uri, timeout: Config.requestTimeout);
 
     switch (res.statusCode) {
       case 200 : return WeatherData.fromJson(jsonDecode(res.body));
@@ -52,7 +53,7 @@ class WeatherService {
           '&units=metric',
     );
 
-    final res = await _client.get(uri).timeout(Config.requestTimeout);
+    final res = await Connectivity.guardedGet(_client, uri, timeout: Config.requestTimeout);
 
     switch (res.statusCode) {
       case 200 : return ForecastParser.parse5Day(jsonDecode(res.body));

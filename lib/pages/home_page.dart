@@ -3,6 +3,7 @@ import '../constants/constants.dart';
 import '../models/models.dart';
 import '../services/location_service.dart';
 import '../services/temperature_service.dart';
+import '../services/theme_service.dart';
 import '../services/weather_service.dart';
 import '../utils/utils.dart';
 import '../widgets/widgets.dart';
@@ -139,15 +140,34 @@ class _WeatherHomePageState extends State<WeatherHomePage>
             SwitchListTile(
               secondary: Icon(isC ? Icons.thermostat_rounded : Icons.thermostat_rounded,
                   color: C.accent),
-              title: const Text('°C / °F', style: TextStyle(color: C.white)),
+              title: Text('°C / °F', style: TextStyle(color: C.white)),
               subtitle: Text(isC ? 'Celsius' : 'Fahrenheit',
-                  style: const TextStyle(color: C.grey, fontSize: 12)),
+                  style: TextStyle(color: C.grey, fontSize: 12)),
               value: isC,
               activeTrackColor: C.accent.withValues(alpha: 0.4),
               activeThumbColor: C.accent,
               onChanged: (_) {
                 Navigator.pop(ctx);
                 TemperatureService.instance.toggle();
+              },
+            ),
+            SwitchListTile(
+              secondary: Icon(
+                ThemeService.instance.isDark.value
+                    ? Icons.dark_mode_rounded
+                    : Icons.light_mode_rounded,
+                color: C.accent,
+              ),
+              title: Text(
+                ThemeService.instance.isDark.value ? 'Dark Mode' : 'Light Mode',
+                style: TextStyle(color: C.white),
+              ),
+              value: ThemeService.instance.isDark.value,
+              activeTrackColor: C.accent.withValues(alpha: 0.4),
+              activeThumbColor: C.accent,
+              onChanged: (_) {
+                Navigator.pop(ctx);
+                ThemeService.instance.toggle();
               },
             ),
             _menuItem(ctx, Icons.info_outline_rounded,'About'),
@@ -161,7 +181,7 @@ class _WeatherHomePageState extends State<WeatherHomePage>
   Widget _menuItem(BuildContext ctx, IconData icon, String label) {
     return ListTile(
       leading: Icon(icon, color: C.accent),
-      title: Text(label, style: const TextStyle(color: C.white)),
+      title: Text(label, style: TextStyle(color: C.white)),
       onTap: () => Navigator.pop(ctx),
     );
   }
@@ -175,7 +195,7 @@ class _WeatherHomePageState extends State<WeatherHomePage>
       lastDate: DateTime.now().add(const Duration(days: 7)),
       builder: (ctx, child) => Theme(
         data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(
+          colorScheme: ColorScheme.dark(
             primary: C.accent,
             surface: C.card2,
           ),
@@ -194,30 +214,30 @@ class _WeatherHomePageState extends State<WeatherHomePage>
         backgroundColor: C.card2,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20)),
-        title: const Text('Change City',
+        title: Text('Change City',
             style: TextStyle(color: C.white)),
         content: TextField(
           controller: ctrl,
           autofocus: true,
-          style: const TextStyle(color: C.white),
+          style: TextStyle(color: C.white),
           textInputAction: TextInputAction.search,
           onSubmitted: (v) => Navigator.pop(ctx, v),
           decoration: InputDecoration(
             hintText: 'e.g. Imus, Cavite...',
-            hintStyle: const TextStyle(color: C.muted),
+            hintStyle: TextStyle(color: C.muted),
             filled: true,
             fillColor: C.bg,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
-            prefixIcon: const Icon(Icons.search, color: C.grey),
+            prefixIcon: Icon(Icons.search, color: C.grey),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel',
+            child: Text('Cancel',
                 style: TextStyle(color: C.grey)),
           ),
           ElevatedButton(
@@ -244,7 +264,7 @@ class _WeatherHomePageState extends State<WeatherHomePage>
     final multi = widget.cities.length > 1;
 
     Widget body = _loading
-        ? const Center(child: CircularProgressIndicator(
+        ? Center(child: CircularProgressIndicator(
         color: C.accent, strokeWidth: 2.5))
         : _error != null
         ? ErrorView(message: _error!,
@@ -253,7 +273,12 @@ class _WeatherHomePageState extends State<WeatherHomePage>
         : _data != null
         ? FadeTransition(
         opacity: _fade,
-        child: _HomeBody(data: _data!, width: width, forecast: _forecast))
+        child: _HomeBody(
+          data: _data!,
+          width: width,
+          forecast: _forecast,
+          onRefresh: () => _load(_data!.cityName),
+        ))
         : const SizedBox();
 
     if (multi) {
@@ -310,14 +335,24 @@ class _HomeBody extends StatelessWidget {
   final WeatherData data;
   final double width;
   final List<DailyForecast>? forecast;
-  const _HomeBody({required this.data, required this.width, this.forecast});
+  final Future<void> Function() onRefresh;
+  const _HomeBody({
+    required this.data,
+    required this.width,
+    this.forecast,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: CustomScrollView(
-        physics: const ClampingScrollPhysics(),
-        slivers: [
+      child: RefreshIndicator(
+        color: C.accent,
+        backgroundColor: C.card,
+        onRefresh: onRefresh,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
           SliverPadding(
             padding: const EdgeInsets.symmetric(
                 horizontal: Dims.pagePadding),
@@ -356,7 +391,8 @@ class _HomeBody extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 }
 

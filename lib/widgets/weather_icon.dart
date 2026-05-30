@@ -33,7 +33,7 @@ class WeatherIcon extends StatelessWidget {
                 ? child
                 : SizedBox(
               width: size * 0.85, height: size * 0.85,
-              child: const Center(
+              child: Center(
                 child: CircularProgressIndicator(
                     color: C.orange, strokeWidth: 2),
               ),

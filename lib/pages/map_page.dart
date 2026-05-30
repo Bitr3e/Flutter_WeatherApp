@@ -180,7 +180,7 @@ class _MapPageState extends State<MapPage>
                     border: Border.all(color: C.divider),
                   ),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.touch_app_rounded,
+                    Icon(Icons.touch_app_rounded,
                         color: C.accent, size: 15),
                     const SizedBox(width: 6),
                     Text('Tap a country pin to see weather',

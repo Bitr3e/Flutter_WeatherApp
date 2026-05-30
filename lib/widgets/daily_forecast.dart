@@ -21,7 +21,7 @@ class DailyForecastWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('5-Day Forecast',
+          Text('5-Day Forecast',
               style: TextStyle(
                 color: C.white,
                 fontSize: 15,
@@ -44,7 +44,7 @@ class DailyForecastWidget extends StatelessWidget {
                 Image.network(day.iconUrl,
                     width: 28, height: 28,
                     errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.cloud, color: C.grey, size: 22)),
+                    Icon(Icons.cloud, color: C.grey, size: 22)),
                 const Spacer(),
                 Text('${t.convert(day.tempHigh).round()}°',
                     style: TextStyle(

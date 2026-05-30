@@ -71,18 +71,18 @@ class MapWeatherPanel extends StatelessWidget {
                     color: C.muted.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.close_rounded, color: C.grey, size: 18),
+                  child: Icon(Icons.close_rounded, color: C.grey, size: 18),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
           if (loading)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: const Center(
                 child: CircularProgressIndicator(
-                    color: C.accent, strokeWidth: 2.5),
+                    strokeWidth: 2.5),
               ),
             )
           else if (error != null)
@@ -151,7 +151,7 @@ class _MapWeatherContent extends StatelessWidget {
               data.iconUrl,
               width: 60, height: 60,
               errorBuilder: (_, __, ___) =>
-              const Icon(Icons.wb_sunny_rounded, color: C.orange, size: 50),
+              Icon(Icons.wb_sunny_rounded, color: C.orange, size: 50),
             ),
             Text(data.capDesc,
                 style: TextStyle(

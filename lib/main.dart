@@ -4,11 +4,13 @@ import 'app.dart';
 import 'constants/config.dart';
 import 'services/favorites_service.dart';
 import 'services/temperature_service.dart';
+import 'services/theme_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await TemperatureService.instance.load();
   await FavoritesService.instance.load();
+  await ThemeService.instance.load();
 
   if (Config.weatherApiKey.isEmpty) {
     runApp(const _MissingApiKeyApp());

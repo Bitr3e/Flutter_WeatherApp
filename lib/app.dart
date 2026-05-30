@@ -2,10 +2,48 @@ import 'package:flutter/material.dart';
 import 'constants/constants.dart';
 import 'pages/pages.dart';
 import 'services/favorites_service.dart';
+import 'services/theme_service.dart';
 import 'widgets/widgets.dart';
 
-class WeatherApp extends StatelessWidget {
+class WeatherApp extends StatefulWidget {
   const WeatherApp({super.key});
+  @override State<WeatherApp> createState() => _WeatherAppState();
+}
+
+class _WeatherAppState extends State<WeatherApp> {
+  @override
+  void initState() {
+    super.initState();
+    ThemeService.instance.isDark.addListener(_onThemeChanged);
+  }
+
+  @override
+  void dispose() {
+    ThemeService.instance.isDark.removeListener(_onThemeChanged);
+    super.dispose();
+  }
+
+  void _onThemeChanged() {
+    if (mounted) setState(() {});
+  }
+
+  ThemeData _buildTheme(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    return ThemeData(
+      brightness: brightness,
+      scaffoldBackgroundColor: isDark ? C.bg : C.bg,
+      useMaterial3: true,
+      fontFamily: 'sans-serif',
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: C.accent,
+        brightness: brightness,
+        surface: isDark ? C.card : C.card,
+      ),
+      splashFactory: NoSplash.splashFactory,
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,29 +51,21 @@ class WeatherApp extends StatelessWidget {
       title: 'Weather',
       debugShowCheckedModeBanner: false,
 
-      /// ─── Text Scaling Fix (safe + modern) ─────────────────
       builder: (ctx, child) {
         final mediaQuery = MediaQuery.of(ctx);
-
+        final scale = mediaQuery.textScaler.clamp(
+          minScaleFactor: 0.85,
+          maxScaleFactor: 1.3,
+        );
         return MediaQuery(
-          data: mediaQuery.copyWith(
-            textScaler: const TextScaler.linear(1.0),
-          ),
+          data: mediaQuery.copyWith(textScaler: scale),
           child: child!,
         );
       },
 
-      /// ─── Theme ─────────────────────────────────────────────
-      theme: ThemeData(
-        scaffoldBackgroundColor: C.bg,
-        brightness: Brightness.dark,
-        useMaterial3: true,
-        fontFamily: 'sans-serif',
-
-        splashFactory: NoSplash.splashFactory,
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-      ),
+      theme: _buildTheme(Brightness.light),
+      darkTheme: _buildTheme(Brightness.dark),
+      themeMode: ThemeService.instance.isDark.value ? ThemeMode.dark : ThemeMode.light,
 
       home: const _MainShell(),
     );
