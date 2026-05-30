@@ -18,7 +18,20 @@ A Flutter weather application optimized for Realme C35 (Android 11, FHD+ 1080x24
 
 ## Screenshots
 
-<!-- TODO: Add screenshots here -->
+<table>
+  <tr>
+    <td><img src="assets/screenshots/Screenshot_20260531-002113.png" width="250"></td>
+    <td><img src="assets/screenshots/Screenshot_20260531-002127.png" width="250"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/screenshots/Screenshot_20260531-002216.png" width="250"></td>
+    <td><img src="assets/screenshots/Screenshot_20260531-002240.png" width="250"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/screenshots/Screenshot_20260531-002249.png" width="250"></td>
+    <td><img src="assets/screenshots/Screenshot_20260531-002255.png" width="250"></td>
+  </tr>
+</table>
 
 ## Setup
 
