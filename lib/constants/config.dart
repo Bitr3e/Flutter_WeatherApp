@@ -1,5 +1,5 @@
 class Config {
-  static const weatherApiKey  = 'ac4a2adc2d23bbee1635725559ad7ced';
+  static const weatherApiKey  = String.fromEnvironment('WEATHER_API_KEY', defaultValue: '');
   static const weatherBaseUrl = 'https://api.openweathermap.org/data/2.5/weather';
   static const forecastBaseUrl = 'https://api.openweathermap.org/data/2.5/forecast';
   static const defaultCity    = 'Manila';

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/constants.dart';
 
 class BottomNav extends StatelessWidget {
-  final int selected;
+  final int selected; 
   final ValueChanged<int> onTap;
 
   const BottomNav({

@@ -5,6 +5,10 @@ import '../models/models.dart';
 import '../utils/forecast_parser.dart';
 
 class WeatherService {
+  final http.Client _client;
+
+  WeatherService({http.Client? client}) : _client = client ?? http.Client();
+
   Future<WeatherData> fetch(String city) async {
     final uri = Uri.parse(
       '${Config.weatherBaseUrl}'
@@ -13,7 +17,7 @@ class WeatherService {
           '&units=metric',
     );
 
-    final res = await http.get(uri).timeout(Config.requestTimeout);
+    final res = await _client.get(uri).timeout(Config.requestTimeout);
 
     switch (res.statusCode) {
       case 200 : return WeatherData.fromJson(jsonDecode(res.body));
@@ -31,7 +35,7 @@ class WeatherService {
           '&units=metric',
     );
 
-    final res = await http.get(uri).timeout(Config.requestTimeout);
+    final res = await _client.get(uri).timeout(Config.requestTimeout);
 
     switch (res.statusCode) {
       case 200 : return WeatherData.fromJson(jsonDecode(res.body));
@@ -48,7 +52,7 @@ class WeatherService {
           '&units=metric',
     );
 
-    final res = await http.get(uri).timeout(Config.requestTimeout);
+    final res = await _client.get(uri).timeout(Config.requestTimeout);
 
     switch (res.statusCode) {
       case 200 : return ForecastParser.parse5Day(jsonDecode(res.body));
