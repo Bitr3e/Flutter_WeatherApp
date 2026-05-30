@@ -123,7 +123,3 @@ lib/
 - Reymart Dela Cruz
 - Carl Andre De Castro
 - Scott Franklin Maher
-
-## License
-
-MIT
