@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/constants.dart';
 import '../models/models.dart';
+import '../services/location_service.dart';
 import '../services/temperature_service.dart';
 import '../services/weather_service.dart';
 import '../utils/utils.dart';
@@ -33,7 +34,42 @@ class _WeatherHomePageState extends State<WeatherHomePage>
     _ac   = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 500));
     _fade = CurvedAnimation(parent: _ac, curve: Curves.easeOut);
-    _load(widget.cities.first);
+    _initLoad();
+  }
+
+  Future<void> _initLoad() async {
+    if (widget.cities.length > 1) {
+      _load(widget.cities.first);
+      return;
+    }
+    final pos = await LocationService.instance.getCurrentPosition();
+    if (pos != null && mounted) {
+      _loadByCoords(pos.latitude, pos.longitude);
+    } else if (mounted) {
+      _load(Config.defaultCity);
+    }
+  }
+
+  Future<void> _loadByCoords(double lat, double lon) async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      final d = await _svc.fetchByCoords(lat, lon);
+      if (!mounted) return;
+      final f = await _svc.fetchForecast(d.cityName);
+      if (!mounted) return;
+      setState(() {
+        _data     = d;
+        _forecast = f;
+        _loading  = false;
+      });
+      _ac.forward(from: 0);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error   = e.toString().replaceFirst('Exception: ', '');
+        _loading = false;
+      });
+    }
   }
 
   void _onUnitChanged() { if (mounted) setState(() {}); }
