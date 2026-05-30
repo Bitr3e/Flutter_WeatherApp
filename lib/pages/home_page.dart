@@ -235,7 +235,7 @@ class _WeatherHomePageState extends State<WeatherHomePage>
             const SizedBox(height: 12),
             _creditTile('John Brence Condesa'),
             _creditTile('Reymart Dela Cruz'),
-            _creditTile('Carl Andri De Castro'),
+            _creditTile('Carl Andre De Castro'),
             _creditTile('Scott Franklin Maher'),
           ],
         ),

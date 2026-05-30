@@ -108,7 +108,7 @@ lib/
 
 - John Brence Condesa
 - Reymart Dela Cruz
-- Carl Andri De Castro
+- Carl Andre De Castro
 - Scott Franklin Maher
 
 ## License
