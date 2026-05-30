@@ -475,67 +475,103 @@ class _GlobePainter extends CustomPainter {
 
   void _drawContinents(Canvas canvas, double cx, double cy,
       double r, double rotation) {
-    final landPaint   = Paint()..color = const Color(0xFF3A7D44)..style = PaintingStyle.fill;
-    final desertPaint = Paint()..color = const Color(0xFFC8A96E)..style = PaintingStyle.fill;
-    final tundraPaint = Paint()..color = const Color(0xFF5E8265)..style = PaintingStyle.fill;
+    // ── Landmass layers ────────────────────────────────
+    final landPaint   = Paint()..color = _landColor;
+    final desertPaint = Paint()..color = _desertColor;
+    final tundraPaint = Paint()..color = _tundraColor;
+    final forestPaint = Paint()..color = _forestColor;
+    final savannaPaint = Paint()..color = _savannaColor;
+    final mountainPaint = Paint()..color = _mountainColor;
+    final iceFillPaint = Paint()..color = _iceColor;
     final borderPaint = Paint()
-      ..color = const Color(0x662D6035)
+      ..color = _borderColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.5;
 
-    final blobs = [
-      // North America
-      _ColoredBlob(-100, 55,  0.26, 0.18, tundraPaint),
-      _ColoredBlob(-100, 38,  0.22, 0.18, landPaint),
-      _ColoredBlob(-105, 24,  0.13, 0.12, desertPaint),
-      // South America
-      _ColoredBlob(-55,  -4,  0.17, 0.14, landPaint),
-      _ColoredBlob(-60, -30,  0.14, 0.18, landPaint),
-      _ColoredBlob(-68, -22,  0.08, 0.07, desertPaint),
-      // Europe
-      _ColoredBlob(15,   55,  0.13, 0.12, landPaint),
-      _ColoredBlob(22,   65,  0.10, 0.08, tundraPaint),
-      // Africa
-      _ColoredBlob(18,   20,  0.22, 0.16, desertPaint),
-      _ColoredBlob(26,   -5,  0.20, 0.22, landPaint),
-      _ColoredBlob(22,  -27,  0.13, 0.13, desertPaint),
-      // Asia
-      _ColoredBlob(90,   50,  0.38, 0.24, landPaint),
-      _ColoredBlob(95,   66,  0.30, 0.11, tundraPaint),
-      _ColoredBlob(57,   34,  0.18, 0.12, desertPaint),
-      // Australia
-      _ColoredBlob(134, -25,  0.12, 0.10, desertPaint),
-      _ColoredBlob(149, -32,  0.06, 0.07, landPaint),
-      // Greenland
-      _ColoredBlob(-42,  72,  0.09, 0.07, tundraPaint),
-    ];
+    // ── Draw base continent polygons ───────────────────
+    _drawPolygon(canvas, _northAmerica, landPaint, cx, cy, r, rotation);
+    _drawPolygon(canvas, _southAmerica, landPaint, cx, cy, r, rotation);
+    _drawPolygon(canvas, _europe, landPaint, cx, cy, r, rotation);
+    _drawPolygon(canvas, _africa, savannaPaint, cx, cy, r, rotation);
+    _drawPolygon(canvas, _asia, landPaint, cx, cy, r, rotation);
+    _drawPolygon(canvas, _australia, desertPaint, cx, cy, r, rotation);
+    _drawPolygon(canvas, _greenland, tundraPaint, cx, cy, r, rotation);
+    _drawPolygon(canvas, _antarctica, iceFillPaint, cx, cy, r, rotation);
 
-    for (final b in blobs) {
-      final pos = _projectToGlobe(b.lon, b.lat, cx, cy, r, rotation);
-      if (pos == null) continue;
-      final w = r * b.widthFactor  * pos.scale;
-      final h = r * b.heightFactor * pos.scale;
-      if (w < 4 || h < 4) continue;
-      final rect = Rect.fromCenter(
-          center: Offset(pos.x, pos.y), width: w, height: h);
-      canvas.drawOval(rect, b.paint);
-      canvas.drawOval(rect, borderPaint);
-    }
+    // ── Terrain sub-regions ────────────────────────────
+    _drawPolygon(canvas, _saharaDesert, desertPaint, cx, cy, r, rotation);
+    _drawPolygon(canvas, _amazonRainforest, forestPaint, cx, cy, r, rotation);
+    _drawPolygon(canvas, _himalayas, mountainPaint, cx, cy, r, rotation);
+    _drawPolygon(canvas, _scandinavianMtns, mountainPaint, cx, cy, r, rotation);
+    _drawPolygon(canvas, _centralAsiaSteppe, tundraPaint, cx, cy, r, rotation);
+    _drawPolygon(canvas, _arabianDesert, desertPaint, cx, cy, r, rotation);
 
-    // Ice caps
-    final icePaint = Paint()..color = const Color(0xDDEEF5FF);
-    final iceStroke = Paint()
+    // ── Continent borders ──────────────────────────────
+    _drawBorder(canvas, _northAmerica, borderPaint, cx, cy, r, rotation);
+    _drawBorder(canvas, _southAmerica, borderPaint, cx, cy, r, rotation);
+    _drawBorder(canvas, _europe, borderPaint, cx, cy, r, rotation);
+    _drawBorder(canvas, _africa, borderPaint, cx, cy, r, rotation);
+    _drawBorder(canvas, _asia, borderPaint, cx, cy, r, rotation);
+    _drawBorder(canvas, _australia, borderPaint, cx, cy, r, rotation);
+    _drawBorder(canvas, _greenland, borderPaint, cx, cy, r, rotation);
+    _drawBorder(canvas, _antarctica, borderPaint, cx, cy, r, rotation);
+
+    // ── Polar ice caps ─────────────────────────────────
+    final iceStrokePaint = Paint()
       ..color = const Color(0xAABBDDFF)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
     final npRect = Rect.fromCenter(
         center: Offset(cx, cy - r * 0.83), width: r * 0.38, height: r * 0.14);
-    canvas.drawOval(npRect, icePaint);
-    canvas.drawOval(npRect, iceStroke);
+    canvas.drawOval(npRect, iceFillPaint);
+    canvas.drawOval(npRect, iceStrokePaint);
     final spRect = Rect.fromCenter(
         center: Offset(cx, cy + r * 0.87), width: r * 0.48, height: r * 0.12);
-    canvas.drawOval(spRect, icePaint);
-    canvas.drawOval(spRect, iceStroke);
+    canvas.drawOval(spRect, iceFillPaint);
+    canvas.drawOval(spRect, iceStrokePaint);
+  }
+
+  void _drawPolygon(Canvas canvas, List<_Coord> points, Paint paint,
+      double cx, double cy, double r, double rotation) {
+    final projected = <Offset>[];
+    for (final p in points) {
+      final pos = _projectToGlobe(p.lon, p.lat, cx, cy, r, rotation);
+      if (pos == null) {
+        // Flush current segment at edge of visible hemisphere
+        if (projected.length >= 3) {
+          canvas.drawPath(
+            Path()..addPolygon(projected, true), paint);
+        }
+        projected.clear();
+        continue;
+      }
+      projected.add(Offset(pos.x, pos.y));
+    }
+    if (projected.length >= 3) {
+      canvas.drawPath(
+        Path()..addPolygon(projected, true), paint);
+    }
+  }
+
+  void _drawBorder(Canvas canvas, List<_Coord> points, Paint paint,
+      double cx, double cy, double r, double rotation) {
+    final projected = <Offset>[];
+    for (final p in points) {
+      final pos = _projectToGlobe(p.lon, p.lat, cx, cy, r, rotation);
+      if (pos == null) {
+        if (projected.length >= 2) {
+          canvas.drawPath(
+            Path()..addPolygon(projected, false), paint);
+        }
+        projected.clear();
+        continue;
+      }
+      projected.add(Offset(pos.x, pos.y));
+    }
+    if (projected.length >= 2) {
+      canvas.drawPath(
+        Path()..addPolygon(projected, false), paint);
+    }
   }
 
   _ProjectedPoint? _projectToGlobe(
@@ -565,17 +601,161 @@ class _GlobePainter extends CustomPainter {
   bool shouldRepaint(_GlobePainter old) => old.rotation != rotation;
 }
 
-class _ColoredBlob {
-  final double lon, lat, widthFactor, heightFactor;
-  final Paint paint;
-  const _ColoredBlob(this.lon, this.lat,
-      this.widthFactor, this.heightFactor, this.paint);
+class _Coord {
+  final double lon, lat;
+  const _Coord(this.lon, this.lat);
 }
 
 class _ProjectedPoint {
   final double x, y, scale;
   const _ProjectedPoint({required this.x, required this.y, required this.scale});
 }
+
+// ─── CONTINENT DATA ───────────────────────────────────────────────────────────
+
+const _landColor    = Color(0xFF3A7D44);
+const _desertColor  = Color(0xFFC8A96E);
+const _tundraColor  = Color(0xFF8B9D6E);
+const _forestColor  = Color(0xFF2D6B30);
+const _iceColor     = Color(0xDDEEF5FF);
+const _borderColor  = Color(0x442D6035);
+const _savannaColor = Color(0xFF8B9B5A);
+const _mountainColor = Color(0xFF6B4423);
+
+// ── Continent outlines (counter-clockwise, lon/lat) ────────────────────────
+
+const _northAmerica = <_Coord>[
+  _Coord(-168, 66), _Coord(-162, 68), _Coord(-152, 64), _Coord(-142, 62),
+  _Coord(-135, 60), _Coord(-130, 56), _Coord(-125, 50), _Coord(-124, 44),
+  _Coord(-122, 38), _Coord(-118, 34), _Coord(-114, 30), _Coord(-110, 28),
+  _Coord(-106, 24), _Coord(-100, 20), _Coord(-92, 18), _Coord(-86, 22),
+  _Coord(-83, 26), _Coord(-80, 28), _Coord(-81, 31), _Coord(-78, 34),
+  _Coord(-76, 38), _Coord(-74, 42), _Coord(-70, 44), _Coord(-66, 48),
+  _Coord(-60, 50), _Coord(-56, 50), _Coord(-58, 54), _Coord(-62, 58),
+  _Coord(-66, 62), _Coord(-72, 66), _Coord(-80, 70), _Coord(-90, 72),
+  _Coord(-100, 72), _Coord(-112, 70), _Coord(-125, 70), _Coord(-140, 68),
+  _Coord(-152, 68), _Coord(-162, 68),
+];
+
+const _southAmerica = <_Coord>[
+  _Coord(-80, 10), _Coord(-77, 8), _Coord(-76, 2), _Coord(-72, 0),
+  _Coord(-62, 2), _Coord(-52, 0), _Coord(-38, -2), _Coord(-35, -6),
+  _Coord(-36, -12), _Coord(-38, -18), _Coord(-42, -22), _Coord(-48, -28),
+  _Coord(-52, -33), _Coord(-58, -36), _Coord(-64, -42), _Coord(-68, -48),
+  _Coord(-72, -52), _Coord(-76, -52), _Coord(-74, -46), _Coord(-72, -38),
+  _Coord(-72, -28), _Coord(-74, -18), _Coord(-76, -8), _Coord(-78, -2),
+];
+
+const _europe = <_Coord>[
+  _Coord(-10, 36), _Coord(-8, 42), _Coord(-2, 44), _Coord(2, 48),
+  _Coord(6, 52), _Coord(8, 56), _Coord(10, 58), _Coord(12, 60),
+  _Coord(16, 62), _Coord(20, 64), _Coord(24, 66), _Coord(28, 68),
+  _Coord(32, 70), _Coord(30, 66), _Coord(26, 62), _Coord(24, 58),
+  _Coord(22, 54), _Coord(20, 50), _Coord(18, 46), _Coord(14, 44),
+  _Coord(12, 42), _Coord(14, 40), _Coord(16, 38), _Coord(18, 36),
+  _Coord(22, 38), _Coord(26, 40), _Coord(28, 42), _Coord(30, 46),
+  _Coord(28, 48), _Coord(26, 52), _Coord(22, 48), _Coord(18, 46),
+  _Coord(14, 44), _Coord(12, 42), _Coord(8, 40), _Coord(4, 38),
+];
+
+const _africa = <_Coord>[
+  _Coord(-16, 35), _Coord(-12, 32), _Coord(-6, 30), _Coord(0, 32),
+  _Coord(6, 34), _Coord(10, 32), _Coord(12, 30), _Coord(18, 28),
+  _Coord(24, 26), _Coord(28, 22), _Coord(32, 18), _Coord(38, 14),
+  _Coord(40, 10), _Coord(42, 4), _Coord(44, 0), _Coord(42, -4),
+  _Coord(40, -8), _Coord(38, -12), _Coord(36, -18), _Coord(32, -24),
+  _Coord(28, -28), _Coord(22, -32), _Coord(18, -34), _Coord(16, -32),
+  _Coord(12, -28), _Coord(10, -22), _Coord(10, -16), _Coord(8, -10),
+  _Coord(4, -4), _Coord(0, 0), _Coord(-4, 4), _Coord(-8, 8),
+  _Coord(-12, 12), _Coord(-16, 16), _Coord(-18, 20), _Coord(-16, 24),
+  _Coord(-16, 28), _Coord(-16, 32),
+];
+
+const _asia = <_Coord>[
+  _Coord(30, 70), _Coord(40, 72), _Coord(50, 74), _Coord(60, 76),
+  _Coord(70, 74), _Coord(80, 74), _Coord(90, 74), _Coord(100, 74),
+  _Coord(110, 74), _Coord(120, 74), _Coord(130, 72), _Coord(140, 70),
+  _Coord(150, 68), _Coord(156, 64), _Coord(160, 62), _Coord(158, 58),
+  _Coord(154, 54), _Coord(148, 50), _Coord(142, 48), _Coord(136, 46),
+  _Coord(130, 44), _Coord(126, 40), _Coord(122, 38), _Coord(118, 36),
+  _Coord(112, 34), _Coord(108, 32), _Coord(104, 30), _Coord(100, 28),
+  _Coord(96, 24), _Coord(100, 20), _Coord(104, 16), _Coord(106, 10),
+  _Coord(104, 6), _Coord(102, 2), _Coord(100, -2), _Coord(104, -6),
+  _Coord(106, -8), _Coord(110, -8), _Coord(112, -6), _Coord(114, -2),
+  _Coord(116, 0), _Coord(118, 4), _Coord(120, 8), _Coord(120, 12),
+  _Coord(118, 14), _Coord(116, 18), _Coord(114, 22), _Coord(110, 24),
+  _Coord(106, 26), _Coord(102, 28), _Coord(98, 28), _Coord(92, 28),
+  _Coord(88, 26), _Coord(84, 24), _Coord(80, 22), _Coord(76, 20),
+  _Coord(72, 18), _Coord(68, 20), _Coord(64, 22), _Coord(60, 24),
+  _Coord(56, 26), _Coord(52, 28), _Coord(48, 28), _Coord(44, 30),
+  _Coord(40, 32), _Coord(36, 34), _Coord(32, 36), _Coord(30, 40),
+  _Coord(28, 44), _Coord(28, 48), _Coord(30, 52), _Coord(30, 56),
+  _Coord(32, 60), _Coord(30, 64), _Coord(30, 68),
+];
+
+const _australia = <_Coord>[
+  _Coord(116, -14), _Coord(120, -12), _Coord(126, -12), _Coord(132, -12),
+  _Coord(138, -12), _Coord(142, -14), _Coord(146, -16), _Coord(150, -20),
+  _Coord(152, -24), _Coord(150, -28), _Coord(148, -32), _Coord(146, -36),
+  _Coord(140, -38), _Coord(136, -36), _Coord(132, -34), _Coord(128, -32),
+  _Coord(124, -34), _Coord(120, -34), _Coord(116, -34), _Coord(114, -32),
+  _Coord(112, -24), _Coord(112, -18), _Coord(114, -16),
+];
+
+const _greenland = <_Coord>[
+  _Coord(-52, 76), _Coord(-44, 78), _Coord(-32, 80), _Coord(-20, 80),
+  _Coord(-18, 78), _Coord(-18, 74), _Coord(-22, 70), _Coord(-28, 68),
+  _Coord(-36, 66), _Coord(-44, 64), _Coord(-52, 64), _Coord(-56, 66),
+  _Coord(-58, 70), _Coord(-56, 74),
+];
+
+const _antarctica = <_Coord>[
+  _Coord(-180, -70), _Coord(-120, -72), _Coord(-60, -72), _Coord(0, -72),
+  _Coord(60, -72), _Coord(120, -72), _Coord(180, -70), _Coord(180, -80),
+  _Coord(120, -82), _Coord(60, -82), _Coord(0, -82), _Coord(-60, -82),
+  _Coord(-120, -82), _Coord(-180, -80),
+];
+
+// ── Terrain sub-regions ─────────────────────────────────────────────────────
+
+const _saharaDesert = <_Coord>[
+  _Coord(-16, 32), _Coord(-10, 34), _Coord(0, 35), _Coord(10, 34),
+  _Coord(20, 32), _Coord(28, 28), _Coord(32, 24), _Coord(36, 18),
+  _Coord(34, 14), _Coord(28, 12), _Coord(20, 14), _Coord(12, 16),
+  _Coord(4, 16), _Coord(-4, 16), _Coord(-12, 18), _Coord(-16, 22),
+];
+
+const _amazonRainforest = <_Coord>[
+  _Coord(-78, -2), _Coord(-72, 2), _Coord(-64, 2), _Coord(-56, 0),
+  _Coord(-50, -2), _Coord(-46, -6), _Coord(-48, -10), _Coord(-52, -14),
+  _Coord(-58, -14), _Coord(-64, -12), _Coord(-70, -8), _Coord(-74, -6),
+];
+
+const _himalayas = <_Coord>[
+  _Coord(74, 34), _Coord(78, 36), _Coord(82, 34), _Coord(86, 32),
+  _Coord(90, 32), _Coord(94, 30), _Coord(98, 30), _Coord(100, 28),
+  _Coord(96, 26), _Coord(92, 26), _Coord(88, 28), _Coord(84, 28),
+  _Coord(80, 30), _Coord(76, 32),
+];
+
+const _scandinavianMtns = <_Coord>[
+  _Coord(6, 62), _Coord(8, 64), _Coord(12, 66), _Coord(16, 68),
+  _Coord(20, 70), _Coord(24, 70), _Coord(22, 68), _Coord(18, 66),
+  _Coord(14, 64), _Coord(10, 62),
+];
+
+const _centralAsiaSteppe = <_Coord>[
+  _Coord(50, 52), _Coord(60, 54), _Coord(70, 54), _Coord(80, 54),
+  _Coord(90, 52), _Coord(100, 50), _Coord(110, 48), _Coord(120, 46),
+  _Coord(110, 44), _Coord(100, 44), _Coord(90, 44), _Coord(80, 46),
+  _Coord(70, 48), _Coord(60, 50),
+];
+
+const _arabianDesert = <_Coord>[
+  _Coord(36, 28), _Coord(40, 30), _Coord(44, 28), _Coord(48, 26),
+  _Coord(52, 24), _Coord(56, 22), _Coord(54, 18), _Coord(50, 16),
+  _Coord(46, 14), _Coord(42, 14), _Coord(40, 18), _Coord(38, 22),
+];
 
 // ─── PINS PAINTER ────────────────────────────────────────────────────────────
 
