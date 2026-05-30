@@ -76,7 +76,7 @@ class BottomNav extends StatelessWidget {
             const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
             decoration: BoxDecoration(
               color: sel
-                  ? C.accent.withOpacity(0.15)
+                  ? C.accent.withValues(alpha: 0.15)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(18),
             ),

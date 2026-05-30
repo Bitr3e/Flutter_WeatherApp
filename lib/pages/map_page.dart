@@ -94,8 +94,6 @@ class _MapPageState extends State<MapPage>
   Widget build(BuildContext context) {
     final top    = MediaQuery.of(context).padding.top;
     final width  = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
-
     return Scaffold(
       backgroundColor: C.bg,
       body: Stack(
@@ -139,12 +137,12 @@ class _MapPageState extends State<MapPage>
                       padding: const EdgeInsets.all(9),
                       decoration: BoxDecoration(
                         color: _autoRotate
-                            ? C.accent.withOpacity(0.2)
+                            ? C.accent.withValues(alpha: 0.2)
                             : C.card,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: _autoRotate
-                              ? C.accent.withOpacity(0.5)
+                              ? C.accent.withValues(alpha: 0.5)
                               : C.divider,
                         ),
                       ),
@@ -171,7 +169,7 @@ class _MapPageState extends State<MapPage>
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: C.card.withOpacity(0.9),
+                    color: C.card.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: C.divider),
                   ),
@@ -317,10 +315,10 @@ class _GlobeViewState extends State<_GlobeView> {
               if (!_isDragging)
                 Positioned(
                   bottom: globeSize * 0.07,
-                  child: AnimatedOpacity(
+                  child: const AnimatedOpacity(
                     opacity: 0.45,
-                    duration: const Duration(milliseconds: 300),
-                    child: Row(mainAxisSize: MainAxisSize.min, children: const [
+                    duration: Duration(milliseconds: 300),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
                       Icon(Icons.swipe_rounded,
                           color: Colors.white, size: 14),
                       SizedBox(width: 4),
@@ -356,14 +354,14 @@ class _GlobePainter extends CustomPainter {
 
     // ── Ocean base — realistic Earth deep blue ─────────
     final oceanPaint = Paint()
-      ..shader = RadialGradient(
-        center: const Alignment(-0.25, -0.3),
-        colors: const [
-          Color(0xFF1A6B9A), // lit side — vibrant mid-blue
-          Color(0xFF0D4D78), // mid ocean
-          Color(0xFF072A4A), // deep shadow side
+      ..shader = const RadialGradient(
+        center: Alignment(-0.25, -0.3),
+        colors: [
+          Color(0xFF1A6B9A),
+          Color(0xFF0D4D78),
+          Color(0xFF072A4A),
         ],
-        stops: const [0.0, 0.5, 1.0],
+        stops: [0.0, 0.5, 1.0],
       ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: r));
     canvas.drawCircle(Offset(cx, cy), r, oceanPaint);
 
@@ -407,32 +405,32 @@ class _GlobePainter extends CustomPainter {
 
     // ── Deep shadow on the night side ─────────────────
     final nightPaint = Paint()
-      ..shader = RadialGradient(
-        center: const Alignment(0.7, 0.2),
+      ..shader = const RadialGradient(
+        center: Alignment(0.7, 0.2),
         radius: 0.75,
-        colors: const [
+        colors: [
           Colors.transparent,
           Color(0x55000A14),
           Color(0xBB000A14),
         ],
-        stops: const [0.35, 0.65, 1.0],
+        stops: [0.35, 0.65, 1.0],
       ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: r))
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(cx, cy), r, nightPaint);
 
     // ── Atmosphere rim — light blue halo ──────────────
     final rimPaint = Paint()
-      ..shader = RadialGradient(
+      ..shader = const RadialGradient(
         center: Alignment.center,
         radius: 1.0,
-        colors: const [
+        colors: [
           Colors.transparent,
           Colors.transparent,
           Color(0x1280CFFF),
           Color(0x4A55AAFF),
           Color(0x6633AAFF),
         ],
-        stops: const [0.0, 0.72, 0.84, 0.93, 1.0],
+        stops: [0.0, 0.72, 0.84, 0.93, 1.0],
       ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: r))
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(cx, cy), r, rimPaint);
@@ -441,10 +439,10 @@ class _GlobePainter extends CustomPainter {
 
     // ── Specular sunlight glint ────────────────────────
     final highlightPaint = Paint()
-      ..shader = RadialGradient(
-        center: const Alignment(-0.45, -0.45),
+      ..shader = const RadialGradient(
+        center: Alignment(-0.45, -0.45),
         radius: 0.55,
-        colors: const [
+        colors: [
           Color(0x22FFFFFF),
           Colors.transparent,
         ],
@@ -611,14 +609,14 @@ class _PinsPainter extends CustomPainter {
           Offset(pos.x, pos.y),
           pinR * 2.5,
           Paint()
-            ..color = C.orange.withOpacity(0.25)
+            ..color = C.orange.withValues(alpha: 0.25)
             ..style = PaintingStyle.fill,
         );
         canvas.drawCircle(
           Offset(pos.x, pos.y),
           pinR * 1.8,
           Paint()
-            ..color = C.orange.withOpacity(0.4)
+            ..color = C.orange.withValues(alpha: 0.4)
             ..style = PaintingStyle.fill,
         );
       }
@@ -634,7 +632,7 @@ class _PinsPainter extends CustomPainter {
         Offset(pos.x, pos.y),
         pinR,
         Paint()
-          ..color = Colors.white.withOpacity(0.8)
+          ..color = Colors.white.withValues(alpha: 0.8)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.0,
       );
@@ -745,7 +743,7 @@ class _PinTapLayer extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 5, vertical: 2),
                   decoration: BoxDecoration(
-                    color: C.card.withOpacity(0.85),
+                    color: C.card.withValues(alpha: 0.85),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                         color: C.divider, width: 0.5),
@@ -791,10 +789,10 @@ class _WeatherPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: C.card,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: C.accent.withOpacity(0.3)),
+        border: Border.all(color: C.accent.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: C.accent.withOpacity(0.08),
+            color: C.accent.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -832,7 +830,7 @@ class _WeatherPanel extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(7),
                   decoration: BoxDecoration(
-                    color: C.muted.withOpacity(0.2),
+                    color: C.muted.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.close_rounded,

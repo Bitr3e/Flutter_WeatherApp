@@ -27,10 +27,10 @@ class HourlyList extends StatelessWidget {
               width: cardW, height: cardH,
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: now ? C.accent.withOpacity(0.18) : C.card,
+                color: now ? C.accent.withValues(alpha: 0.18) : C.card,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: now ? C.accent.withOpacity(0.5) : C.divider,
+                  color: now ? C.accent.withValues(alpha: 0.5) : C.divider,
                 ),
               ),
               child: Column(

@@ -19,8 +19,8 @@ class WeatherIcon extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(colors: [
-                C.orange.withOpacity(0.22),
-                C.orange.withOpacity(0.05),
+                C.orange.withValues(alpha: 0.22),
+                C.orange.withValues(alpha: 0.05),
                 Colors.transparent,
               ]),
             ),

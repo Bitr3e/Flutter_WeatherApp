@@ -24,21 +24,21 @@ class AlertsPage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 )),
             const SizedBox(height: 22),
-            _AlertCard(
+            const _AlertCard(
               icon : Icons.thunderstorm_rounded,
               title: 'Thunderstorm Warning',
               desc : 'Heavy thunderstorms expected between 3 PM – 8 PM today.',
               color: Colors.orange,
             ),
             const SizedBox(height: Dims.itemGap),
-            _AlertCard(
+            const _AlertCard(
               icon : Icons.water_rounded,
               title: 'Flood Watch',
               desc : 'Low-lying areas may experience flooding due to heavy rain.',
               color: Colors.blue,
             ),
             const SizedBox(height: Dims.itemGap),
-            _AlertCard(
+            const _AlertCard(
               icon : Icons.air_rounded,
               title: 'Strong Wind Advisory',
               desc : 'Winds up to 60 km/h expected throughout the evening.',
@@ -75,15 +75,15 @@ class _AlertCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.07),
+        color: color.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(
           padding: const EdgeInsets.all(9),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.14),
+            color: color.withValues(alpha: 0.14),
             borderRadius: BorderRadius.circular(11),
           ),
           child: Icon(icon, color: color, size: 21),

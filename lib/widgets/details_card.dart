@@ -156,7 +156,7 @@ class DetailsCard extends StatelessWidget {
       Container(
         padding: const EdgeInsets.all(7),
         decoration: BoxDecoration(
-          color: C.accent.withOpacity(0.1),
+          color: C.accent.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(9),
         ),
         child: Icon(icon, color: C.accent, size: 17),
