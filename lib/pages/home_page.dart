@@ -15,6 +15,7 @@ class _WeatherHomePageState extends State<WeatherHomePage>
     with SingleTickerProviderStateMixin {
   final _svc = WeatherService();
   WeatherData? _data;
+  List<DailyForecast>? _forecast;
   bool    _loading = false;
   String? _error;
 
@@ -42,9 +43,16 @@ class _WeatherHomePageState extends State<WeatherHomePage>
   Future<void> _load(String city) async {
     setState(() { _loading = true; _error = null; });
     try {
-      final d = await _svc.fetch(city);
+      final results = await Future.wait([
+        _svc.fetch(city),
+        _svc.fetchForecast(city),
+      ]);
       if (!mounted) return;
-      setState(() { _data = d; _loading = false; });
+      setState(() {
+        _data     = results[0] as WeatherData;
+        _forecast = results[1] as List<DailyForecast>;
+        _loading  = false;
+      });
       _ac.forward(from: 0);
     } catch (e) {
       if (!mounted) return;
@@ -210,7 +218,7 @@ class _WeatherHomePageState extends State<WeatherHomePage>
               : _data != null
               ? FadeTransition(
               opacity: _fade,
-              child: _HomeBody(data: _data!, width: width))
+               child: _HomeBody(data: _data!, width: width, forecast: _forecast))
               : const SizedBox(),
         ),
       ]),
@@ -223,7 +231,8 @@ class _WeatherHomePageState extends State<WeatherHomePage>
 class _HomeBody extends StatelessWidget {
   final WeatherData data;
   final double width;
-  const _HomeBody({required this.data, required this.width});
+  final List<DailyForecast>? forecast;
+  const _HomeBody({required this.data, required this.width, this.forecast});
 
   @override
   Widget build(BuildContext context) {
@@ -256,6 +265,12 @@ class _HomeBody extends StatelessWidget {
                 const SizedBox(height: 12),
                 HourlyList(hourly: data.hourly),
                 const SizedBox(height: Dims.sectionGap),
+                if (forecast != null && forecast!.isNotEmpty) ...[
+                  const SectionTitle(title: '5-Day Forecast'),
+                  const SizedBox(height: 12),
+                  DailyForecastWidget(forecast: forecast!),
+                  const SizedBox(height: Dims.sectionGap),
+                ],
                 DetailsCard(data: data),
                 const SizedBox(height: 24),
               ]),
